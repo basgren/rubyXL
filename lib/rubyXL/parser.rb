@@ -216,8 +216,8 @@ module RubyXL
         ##end legacy drawing
       end
 
-
-      row_data = files[j].xpath('/xmlns:worksheet/xmlns:sheetData/xmlns:row[xmlns:c[xmlns:v]]',namespaces)
+      # Get only rows with <c> child nodes.
+      row_data = files[j].xpath('/xmlns:worksheet/xmlns:sheetData/xmlns:row[xmlns:c]',namespaces)
       row_data.each do |row|
         unless @data_only
           ##row styles##
@@ -236,12 +236,10 @@ module RubyXL
           ##end row styles##
         end
 
-        unless @data_only
-          c_row = row.search('./xmlns:c')
-        else
-          c_row = row.search('./xmlns:c[xmlns:v[text()]]')
-        end
-        c_row.each do |value|
+        # Following specification, <row> can contain only <c> or <extLst>
+        # children, so we won't use xpath to filter because of performance.
+        # <extLst> nodes are filtered when row_data is collected.
+        row.children.each do |value|
           #attributes is from the excel cell(c) and is basically location information and style and type
           value_attributes= value.attributes
           # r attribute contains the location like A1
@@ -265,12 +263,12 @@ module RubyXL
           elsif element_hash['is_element']
             # Process only plain text for now (<t> child element).
             child = element_hash['is_element'].children.first
-            v_element_content = child.name == 't' ? child.content : ""
+            v_element_content = child.name == 't' ? child.content : ''
 
           else
-            v_element_content=""
+            v_element_content = ''
           end
-          if v_element_content =="" #no data
+          if v_element_content == '' #no data
             cell_data = nil
           elsif data_type == RubyXL::Cell::SHARED_STRING
             str_index = Integer(v_element_content)
