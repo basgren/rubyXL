@@ -257,6 +257,16 @@ module RubyXL
           # v is the value element that is part of the cell
           if element_hash["v_element"]
             v_element_content = element_hash["v_element"].content
+
+          # Processing inlineStr element:
+          # <c t="inlineStr" ...>
+          #   <is> <t> [text] </t> </is>
+          # </c>
+          elsif element_hash['is_element']
+            # Process only plain text for now (<t> child element).
+            child = element_hash['is_element'].children.first
+            v_element_content = child.name == 't' ? child.content : ""
+
           else
             v_element_content=""
           end
@@ -266,6 +276,8 @@ module RubyXL
             str_index = Integer(v_element_content)
             cell_data = shared_strings[str_index].to_s
           elsif data_type == RubyXL::Cell::RAW_STRING
+            cell_data = v_element_content
+          elsif data_type == RubyXL::Cell::INLINE_STRING
             cell_data = v_element_content
           elsif data_type == RubyXL::Cell::ERROR
             cell_data = v_element_content

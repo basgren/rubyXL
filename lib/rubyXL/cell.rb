@@ -2,6 +2,7 @@ module RubyXL
   class Cell < PrivateClass
     SHARED_STRING = 's'
     RAW_STRING = 'str'
+    INLINE_STRING = 'inlineStr'
     ERROR = 'e'
 
     attr_accessor :row, :column, :datatype, :style_index, :formula, :worksheet
